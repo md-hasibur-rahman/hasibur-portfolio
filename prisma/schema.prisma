@@ -1,0 +1,326 @@
+// Prisma schema for the full-stack portfolio application.
+// Datasource: PostgreSQL. Media binaries live in Cloudinary; only metadata is stored here.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum ProjectStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum ConversationStatus {
+  OPEN
+  CLOSED
+  ARCHIVED
+}
+
+enum AssetResourceType {
+  IMAGE
+  VIDEO
+  RAW
+}
+
+enum AuditStatus {
+  SUCCESS
+  FAILURE
+}
+
+// MFA-ready: a session records how the user proved possession of their credential.
+enum AuthMethod {
+  PASSWORD
+  TOTP
+  PASSKEY
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String
+  username      String    @unique
+  passwordHash  String
+  role          Role      @default(USER)
+  emailVerified DateTime?
+  avatarUrl     String?
+  // Blocking keeps the row (and its message history) instead of deleting the user.
+  blockedAt     DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  lastLoginAt   DateTime?
+
+  sessions     Session[]
+  authTokens   AuthToken[]
+  profile      Profile?
+  sentMessages Message[]
+  conversations Conversation[]
+  assets       Asset[]
+  vaultItems   VaultItem[]
+  credentials  ApiCredential[]
+  auditLogs    AuditLog[]
+  shortLinks   ShortLink[]
+
+  @@index([role])
+  @@index([createdAt])
+  @@map("users")
+}
+
+model Session {
+  id         String     @id @default(cuid())
+  userId     String
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt  DateTime
+  createdAt  DateTime   @default(now())
+  lastUsedAt DateTime   @default(now())
+  // Freshness anchor for re-authentication on sensitive actions (vault, credentials).
+  authenticatedAt DateTime @default(now())
+  method     AuthMethod @default(PASSWORD)
+  revokedAt  DateTime?
+  ipAddress  String?
+  userAgent  String?
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+model Profile {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bio         String?
+  location    String?
+  website     String?
+  githubUrl   String?
+  linkedinUrl String?
+  twitterUrl  String?
+  avatarUrl   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("profiles")
+}
+
+// One-time-use tokens for email verification and password reset.
+// Only a SHA-256 hash of the presented token is stored.
+model AuthToken {
+  id        String    @id @default(cuid())
+  tokenHash String    @unique
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  purpose   AuthTokenPurpose
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId, purpose])
+  @@map("auth_tokens")
+}
+
+enum AuthTokenPurpose {
+  EMAIL_VERIFICATION
+  PASSWORD_RESET
+}
+
+model Project {
+  id               String        @id @default(cuid())
+  title            String
+  slug             String        @unique
+  description      String
+  content          String        @default("")
+  thumbnailAssetId String?       @unique
+  thumbnail        Asset?        @relation(fields: [thumbnailAssetId], references: [id], onDelete: SetNull)
+  githubUrl        String?
+  liveUrl          String?
+  featured         Boolean       @default(false)
+  status           ProjectStatus @default(DRAFT)
+  sortOrder        Int           @default(0)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  technologies ProjectTechnology[]
+
+  @@index([status, sortOrder])
+  @@map("projects")
+}
+
+model Technology {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  icon      String?
+  createdAt DateTime @default(now())
+
+  projects ProjectTechnology[]
+
+  @@map("technologies")
+}
+
+model ProjectTechnology {
+  projectId     String
+  technologyId  String
+  project       Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  technology    Technology @relation(fields: [technologyId], references: [id], onDelete: Cascade)
+
+  @@id([projectId, technologyId])
+  @@map("project_technologies")
+}
+
+model Conversation {
+  id     String @id @default(cuid())
+  // Contact-form threads have no account behind them: userId stays null and the visitor is
+  // identified by the email pair below. Exactly one side must be present, enforced in the service.
+  userId String?
+  user   User?  @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  visitorName  String?
+  visitorEmail String?
+
+  subject       String
+  status        ConversationStatus @default(OPEN)
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  lastMessageAt DateTime           @default(now())
+
+  messages Message[]
+
+  @@index([userId, lastMessageAt])
+  @@index([visitorEmail, lastMessageAt])
+  @@index([status])
+  @@map("conversations")
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  // Owner replies carry senderId; a null sender means the conversation's visitor wrote it.
+  senderId       String?
+  sender         User?        @relation(fields: [senderId], references: [id], onDelete: SetNull)
+  body           String
+  readAt         DateTime?
+  createdAt      DateTime     @default(now())
+
+  @@index([conversationId, createdAt])
+  @@index([senderId])
+  @@map("messages")
+}
+
+model Asset {
+  id           String            @id @default(cuid())
+  publicId     String            @unique
+  resourceType AssetResourceType @default(IMAGE)
+  secureUrl    String
+  format       String?
+  width        Int?
+  height       Int?
+  bytes        Int?
+  folder       String?
+  altText      String?
+  createdBy    String
+  creator      User              @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+  createdAt    DateTime          @default(now())
+
+  project Project?
+
+  @@index([folder])
+  @@index([resourceType])
+  @@map("assets")
+}
+
+// encryptedPassword / encryptedNotes are AES-256-GCM ciphertext (iv|tag|ciphertext, base64).
+// The vault key lives in VAULT_ENCRYPTION_KEY only — never in this database.
+model VaultItem {
+  id                String   @id @default(cuid())
+  ownerId           String
+  owner             User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  title             String
+  username          String?
+  encryptedPassword String?
+  encryptedNotes    String?
+  url               String?
+  category          String   @default("Other")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([ownerId, category])
+  @@map("vault_items")
+}
+
+model ApiCredential {
+  id              String   @id @default(cuid())
+  ownerId         String
+  owner           User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  name            String
+  service         String
+  encryptedKey    String?
+  encryptedSecret String?
+  baseUrl         String?
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([ownerId, service])
+  @@map("api_credentials")
+}
+
+// Audit rows must never contain plaintext passwords or secret values.
+model AuditLog {
+  id         String      @id @default(cuid())
+  userId     String?
+  user       User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action     String
+  resource   String
+  resourceId String?
+  ipAddress  String?
+  userAgent  String?
+  status     AuditStatus @default(SUCCESS)
+  metadata   Json?
+  createdAt  DateTime    @default(now())
+
+  @@index([createdAt])
+  @@index([action])
+  @@index([userId])
+  @@map("audit_logs")
+}
+
+// Feed for login throttling: failed attempts per email/IP window.
+model LoginAttempt {
+  id        String   @id @default(cuid())
+  email     String
+  ipAddress String?
+  succeeded Boolean
+  createdAt DateTime @default(now())
+
+  @@index([email, createdAt])
+  @@index([ipAddress, createdAt])
+  @@map("login_attempts")
+}
+
+// Public /s/<slug> redirects. The optional password is stored as an argon2id PHC string —
+// the same hasher as account passwords — and is verified server-side before the redirect.
+model ShortLink {
+  id           String   @id @default(cuid())
+  slug         String   @unique
+  targetUrl    String
+  title        String?
+  passwordHash String?
+  clicks       Int      @default(0)
+  createdBy    String
+  creator      User     @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([createdBy, createdAt])
+  @@map("short_links")
+}

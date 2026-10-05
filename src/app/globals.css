@@ -1,0 +1,315 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-heading: var(--font-sans);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+
+  /* Brand ramp. Stays identical in both modes so the navy footer, sidebar and hero
+     gradients read the same way whichever theme is active. */
+  --color-navy-50: var(--navy-50);
+  --color-navy-100: var(--navy-100);
+  --color-navy-200: var(--navy-200);
+  --color-navy-300: var(--navy-300);
+  --color-navy-400: var(--navy-400);
+  --color-navy-500: var(--navy-500);
+  --color-navy-600: var(--navy-600);
+  --color-navy-700: var(--navy-700);
+  --color-navy-800: var(--navy-800);
+  --color-navy-900: var(--navy-900);
+  --color-navy-950: var(--navy-950);
+  --color-azure-300: var(--azure-300);
+  --color-azure-400: var(--azure-400);
+  --color-azure-500: var(--azure-500);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.15);
+  --radius-2xl: calc(var(--radius) * 1.4);
+  --radius-3xl: calc(var(--radius) * 1.8);
+  --radius-4xl: calc(var(--radius) * 2.2);
+
+  --shadow-elevated: var(--elev-1);
+  --shadow-elevated-lg: var(--elev-2);
+  --shadow-inset-line: var(--elev-inset);
+}
+
+:root {
+  /* Navy ramp — the brand colour of this site. */
+  --navy-50: oklch(0.974 0.011 262);
+  --navy-100: oklch(0.944 0.021 262);
+  --navy-200: oklch(0.886 0.036 262);
+  --navy-300: oklch(0.792 0.058 261);
+  --navy-400: oklch(0.664 0.086 260);
+  --navy-500: oklch(0.546 0.104 261);
+  --navy-600: oklch(0.448 0.108 263);
+  --navy-700: oklch(0.368 0.098 264);
+  --navy-800: oklch(0.288 0.081 264);
+  --navy-900: oklch(0.221 0.063 264);
+  --navy-950: oklch(0.158 0.047 265);
+  --azure-300: oklch(0.848 0.083 236);
+  --azure-400: oklch(0.74 0.122 238);
+  --azure-500: oklch(0.632 0.146 244);
+
+  --background: oklch(0.988 0.006 262);
+  --foreground: oklch(0.203 0.055 264);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.203 0.055 264);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.203 0.055 264);
+  --primary: oklch(0.256 0.072 264);
+  --primary-foreground: oklch(0.982 0.008 262);
+  --secondary: oklch(0.946 0.02 262);
+  --secondary-foreground: oklch(0.288 0.075 264);
+  --muted: oklch(0.957 0.014 262);
+  --muted-foreground: oklch(0.468 0.038 262);
+  --accent: oklch(0.931 0.032 259);
+  --accent-foreground: oklch(0.256 0.072 264);
+  --destructive: oklch(0.577 0.225 27.3);
+  --border: oklch(0.898 0.018 262);
+  --input: oklch(0.882 0.021 262);
+  --ring: oklch(0.546 0.124 246);
+  --chart-1: oklch(0.368 0.098 264);
+  --chart-2: oklch(0.546 0.104 261);
+  --chart-3: oklch(0.632 0.146 244);
+  --chart-4: oklch(0.74 0.122 238);
+  --chart-5: oklch(0.848 0.083 236);
+  --radius: 0.875rem;
+
+  /* The dashboard rail is navy in both themes — it is the one place the brand
+     colour is allowed to take over the whole surface. */
+  --sidebar: oklch(0.203 0.058 264);
+  --sidebar-foreground: oklch(0.955 0.009 262);
+  --sidebar-primary: oklch(0.982 0.008 262);
+  --sidebar-primary-foreground: oklch(0.203 0.058 264);
+  --sidebar-accent: oklch(1 0 0 / 9%);
+  --sidebar-accent-foreground: oklch(0.982 0.008 262);
+  --sidebar-border: oklch(1 0 0 / 12%);
+  --sidebar-ring: oklch(0.74 0.122 238);
+
+  /* Navy-tinted elevation: shadows that read as depth, not as grey smudges. */
+  --elev-1: 0 1px 2px oklch(0.203 0.055 264 / 5%), 0 6px 18px -10px oklch(0.203 0.055 264 / 22%);
+  --elev-2: 0 2px 4px oklch(0.203 0.055 264 / 6%), 0 22px 44px -22px oklch(0.203 0.055 264 / 34%);
+  --elev-inset: inset 0 1px 0 oklch(1 0 0 / 70%);
+}
+
+.dark {
+  --background: oklch(0.156 0.034 265);
+  --foreground: oklch(0.958 0.008 262);
+  --card: oklch(0.203 0.042 265);
+  --card-foreground: oklch(0.958 0.008 262);
+  --popover: oklch(0.196 0.04 265);
+  --popover-foreground: oklch(0.958 0.008 262);
+  --primary: oklch(0.76 0.115 243);
+  --primary-foreground: oklch(0.178 0.05 265);
+  --secondary: oklch(0.278 0.046 265);
+  --secondary-foreground: oklch(0.952 0.009 262);
+  --muted: oklch(0.246 0.041 265);
+  --muted-foreground: oklch(0.712 0.034 258);
+  --accent: oklch(0.301 0.055 264);
+  --accent-foreground: oklch(0.962 0.008 262);
+  --destructive: oklch(0.695 0.192 25.3);
+  --border: oklch(1 0 0 / 12%);
+  --input: oklch(1 0 0 / 16%);
+  --ring: oklch(0.712 0.126 241);
+  --chart-1: oklch(0.76 0.115 243);
+  --chart-2: oklch(0.664 0.086 260);
+  --chart-3: oklch(0.546 0.104 261);
+  --chart-4: oklch(0.448 0.108 263);
+  --chart-5: oklch(0.368 0.098 264);
+
+  --sidebar: oklch(0.129 0.031 265);
+  --sidebar-foreground: oklch(0.952 0.009 262);
+  --sidebar-primary: oklch(0.962 0.008 262);
+  --sidebar-primary-foreground: oklch(0.156 0.034 265);
+  --sidebar-accent: oklch(1 0 0 / 9%);
+  --sidebar-accent-foreground: oklch(0.962 0.008 262);
+  --sidebar-border: oklch(1 0 0 / 11%);
+  --sidebar-ring: oklch(0.712 0.126 241);
+
+  --elev-1: inset 0 1px 0 oklch(1 0 0 / 5%), 0 10px 26px -16px oklch(0 0 0 / 80%);
+  --elev-2: inset 0 1px 0 oklch(1 0 0 / 7%), 0 26px 54px -24px oklch(0 0 0 / 88%);
+  --elev-inset: inset 0 1px 0 oklch(1 0 0 / 6%);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    @apply font-sans;
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-background text-foreground;
+    text-rendering: optimizeLegibility;
+  }
+  ::selection {
+    background: oklch(0.546 0.104 261 / 22%);
+    color: var(--foreground);
+  }
+  /* Keyboard focus must stay obvious on a navy surface; the browser default outline is not. */
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-ring;
+  }
+}
+
+@layer utilities {
+  .shell {
+    @apply mx-auto w-full max-w-6xl px-5 sm:px-8;
+  }
+  .shell-narrow {
+    @apply mx-auto w-full max-w-3xl px-5 sm:px-8;
+  }
+
+  /* Mono kickers carry the editorial voice: small, wide-tracked, never decorative colour. */
+  .eyebrow {
+    @apply font-mono text-[0.68rem] font-medium uppercase tracking-[0.24em] text-muted-foreground;
+  }
+
+  .surface {
+    @apply rounded-2xl bg-card ring-1 ring-foreground/8 shadow-elevated;
+  }
+
+  .navy-panel {
+    background-color: var(--navy-950);
+    background-image:
+      radial-gradient(60rem 30rem at 12% -10%, oklch(0.546 0.104 261 / 42%), transparent 62%),
+      radial-gradient(46rem 26rem at 96% 8%, oklch(0.632 0.146 244 / 26%), transparent 58%),
+      linear-gradient(160deg, var(--navy-900), var(--navy-950) 62%);
+    color: var(--navy-50);
+  }
+
+  /* Hero wash: two soft navy/azure blooms over the page background. */
+  .mesh {
+    background-image:
+      radial-gradient(48rem 24rem at 8% -6%, oklch(0.546 0.104 261 / 16%), transparent 60%),
+      radial-gradient(40rem 22rem at 92% 2%, oklch(0.632 0.146 244 / 13%), transparent 58%);
+  }
+  .dark .mesh {
+    background-image:
+      radial-gradient(48rem 24rem at 8% -6%, oklch(0.546 0.104 261 / 26%), transparent 60%),
+      radial-gradient(40rem 22rem at 92% 2%, oklch(0.632 0.146 244 / 18%), transparent 58%);
+  }
+
+  .grid-lines {
+    background-image:
+      linear-gradient(to right, oklch(0.546 0.104 261 / 7%) 1px, transparent 1px),
+      linear-gradient(to bottom, oklch(0.546 0.104 261 / 7%) 1px, transparent 1px);
+    background-size: 4rem 4rem;
+    mask-image: radial-gradient(60% 50% at 50% 0%, #000 40%, transparent 100%);
+  }
+
+  .link-underline {
+    @apply relative inline-block;
+  }
+  .link-underline::after {
+    content: "";
+    @apply absolute -bottom-0.5 left-0 h-px w-full origin-left scale-x-0 bg-current transition-transform duration-200 ease-out;
+  }
+  .link-underline:hover::after,
+  .link-underline:focus-visible::after {
+    transform: scaleX(1);
+  }
+
+  .animate-rise {
+    animation: rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .animate-rise-soft {
+    animation: rise-soft 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(0.6rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes rise-soft {
+  from {
+    opacity: 0;
+    transform: translateY(1rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Motion is a nicety, never a requirement. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .animate-rise,
+  .animate-rise-soft {
+    animation: none;
+  }
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Firefox + WebKit scrollbars pick up the navy tint instead of the OS default grey. */
+* {
+  scrollbar-color: var(--navy-300) transparent;
+  scrollbar-width: thin;
+}
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-thumb {
+  background: color-mix(in oklch, var(--foreground) 18%, transparent);
+  border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in oklch, var(--foreground) 30%, transparent);
+  background-clip: content-box;
+}
