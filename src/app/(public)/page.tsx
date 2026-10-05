@@ -79,7 +79,7 @@ export default async function HomePage() {
             </div>
 
             <div
-              className="animate-rise-soft mx-auto w-full max-w-[21rem] lg:mx-0 lg:max-w-none"
+              className="animate-rise-soft order-first mx-auto w-full max-w-[21rem] lg:order-none lg:mx-0 lg:max-w-none"
               style={{ animationDelay: "160ms" }}
             >
               <figure className="relative">
